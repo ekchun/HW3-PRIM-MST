@@ -2,6 +2,10 @@
 
 In this assignment, you'll implement Prim's algorithm, a non-trivial greedy algorithm used to construct minimum spanning trees. 
 
+# Eden's Notes
+Yippee! Here's assignment 3. Utilized me, my notes and slides, Geeks 4 Geeks haha, and a little bit of Perplexity for checking.
+Let me know if you have any questions.
+
 ## Tasks
 
 ### Coding

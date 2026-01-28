@@ -6,7 +6,7 @@ class Graph:
 
     def __init__(self, adjacency_mat: Union[np.ndarray, str]):
         """
-    
+
         Unlike the BFS assignment, this Graph class takes an adjacency matrix as input. `adjacency_mat` 
         can either be a 2D numpy array of floats or a path to a CSV file containing a 2D numpy array of floats.
 
@@ -41,4 +41,31 @@ class Graph:
         `heapify`, `heappop`, and `heappush` functions.
 
         """
-        self.mst = None
+        n = self.adj_mat.shape[0] #number of vertices in the graph
+        self.mst = np.full((n,n), 0) #empty set/matrix MST, store as self.mst
+        S = n * [False]  #explored vertices, start with none
+        pq = [] #priority queue... put in (weight, start_vertex, end_vertex)
+        
+        S[0] = True  #start
+
+        #add edges from start to pq
+        for v in range(n):
+            edge_weight = self.adj_mat[0][v]
+            if edge_weight != 0: # can we have negative edge weights...?
+                heapq.heappush(pq, (edge_weight, 0, v)) # heapq to pq!
+
+        edge_count = 0 #track so we can repeat loop n - 1 times
+
+        while pq and edge_count < n - 1:
+            weight, u, v = heapq.heappop(pq) #get the minimum cost edge
+            if not S[v]: #NOT explored
+                S[v] = True #explored
+                self.mst[u][v] = weight #add edge to MST
+                self.mst[v][u] = weight #undirected graph, add both ways...?
+                edge_count += 1 #edge count goes up!
+
+                #must add new edges from v, e for edges lol
+                for e in range(n):
+                    new_weight = self.adj_mat[v][e]
+                    if new_weight != 0 and not S[e]:
+                        heapq.heappush(pq, (new_weight, v, e)) 

@@ -35,6 +35,21 @@ def check_mst(adj_mat: np.ndarray,
             total += mst[i, j]
     assert approx_equal(total, expected_weight), 'Proposed MST has incorrect expected weight'
 
+    # easiest... check that MST has exactly n-1 edges
+    edges = np.sum(mst > 0)
+    assert edges == mst.shape[0] - 1, 'Proposed MST has incorrect edge count'
+
+    # should always be connected
+    degrees = np.sum(mst > 0, axis = 1)
+    assert np.all(degrees > 0), 'Proposed MST has disconnected vertices'
+
+    # symmetrical bc we defined undirected graph
+    assert np.allclose(mst, mst.T), 'Proposed MST is not symmetrical'
+
+    #trying to use the arguements? adj_mat
+    edge = mst > 0
+    assert np.all(approx_equal(mst[edge], adj_mat[edge])), "MST edges don't match original graph edges"
+
 
 def test_mst_small():
     """
@@ -65,10 +80,48 @@ def test_mst_single_cell_data():
     check_mst(g.adj_mat, g.mst, 57.263561605571695)
 
 
-def test_mst_student():
+def test_mst_student1():
     """
     
-    TODO: Write at least one unit test for MST construction.
+    Simple two-node graph test case. Is this too similar to test_mst_small?
     
     """
-    pass
+    adjmat = np.array([[0, 3],
+                       [3, 0]])
+    g = Graph(adjmat)
+    g.construct_mst()
+
+    check_mst(g.adj_mat, g.mst, 3)
+
+
+def test_mst_student2():
+    """
+    
+    n - 1 edges again...
+    
+    """
+    g = Graph('../data/small.csv')
+    g.construct_mst()
+
+    n = g.mst.shape[0]
+    num_edges = np.sum(g.mst > 0)
+
+    assert num_edges == n - 1
+
+def test_mst_student3():
+    """
+    
+    Check for symmetry and no self-loops.
+    I don't know what else to do...
+    
+    """
+    coords = np.loadtxt('../data/slingshot_example.txt')
+    dist_mat = pairwise_distances(coords)
+
+    g = Graph(dist_mat)
+    g.construct_mst()
+
+    # symmetry
+    assert np.allclose(g.mst, g.mst.T)
+    # no self-loops
+    assert np.all(np.diag(g.mst) == 0)
