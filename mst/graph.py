@@ -41,31 +41,38 @@ class Graph:
         `heapify`, `heappop`, and `heappush` functions.
 
         """
-        n = self.adj_mat.shape[0] #number of vertices in the graph
-        self.mst = np.full((n,n), 0) #empty set/matrix MST, store as self.mst
-        S = n * [False]  #explored vertices, start with none
-        pq = [] #priority queue... put in (weight, start_vertex, end_vertex)
+        pq = []  #priority queue
+        start = 0  #starting vertex
+        n = self.adj_mat.shape[0] #number of vertices
+
+        key = [float('inf')] * n  #list for keys and initialize as inf
+        parent = [-1] * n  #store parent of each vertex
         
-        S[0] = True  #start
+        S = [False] * n #explored vertices, start with none
 
-        #add edges from start to pq
+        heapq.heappush(pq, (0, start)) #push start vertex to pq with 0 weight
+        key[start] = 0 
+
+        while pq:
+            u = heapq.heappop(pq)[1] #get vertex with min key
+
+            if S[u]: #already explored
+                continue
+
+            S[u] = True #mark as explored
+            neighbors = self.adj_mat[u].nonzero()[0]  #get neighbors of u, indices
+
+            for v in neighbors:
+                weight = self.adj_mat[u, v]
+
+                if not S[v] and key[v] > weight: #v not explored, cost less than current
+                    key[v] = weight #update cost
+                    heapq.heappush(pq, (key[v], v))
+                    parent[v] = u
+        
+        #construct MST adjacency matrix
+        self.mst = np.zeros((n,n)) #empty set/matrix MST, store as self.mst
         for v in range(n):
-            edge_weight = self.adj_mat[0][v]
-            if edge_weight != 0: # can we have negative edge weights...?
-                heapq.heappush(pq, (edge_weight, 0, v)) # heapq to pq!
-
-        edge_count = 0 #track so we can repeat loop n - 1 times
-
-        while pq and edge_count < n - 1:
-            weight, u, v = heapq.heappop(pq) #get the minimum cost edge
-            if not S[v]: #NOT explored
-                S[v] = True #explored
-                self.mst[u][v] = weight #add edge to MST
-                self.mst[v][u] = weight #undirected graph, add both ways...?
-                edge_count += 1 #edge count goes up!
-
-                #must add new edges from v, e for edges lol
-                for e in range(n):
-                    new_weight = self.adj_mat[v][e]
-                    if new_weight != 0 and not S[e]:
-                        heapq.heappush(pq, (new_weight, v, e)) 
+            if parent[v] != -1:
+                self.mst[parent[v], v] = key[v]
+                self.mst[v, parent[v]] = key[v] #undirected graph, add both ways

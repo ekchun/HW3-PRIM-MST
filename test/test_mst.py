@@ -35,9 +35,10 @@ def check_mst(adj_mat: np.ndarray,
             total += mst[i, j]
     assert approx_equal(total, expected_weight), 'Proposed MST has incorrect expected weight'
 
-    # easiest... check that MST has exactly n-1 edges
-    edges = np.sum(mst > 0)
-    assert edges == mst.shape[0] - 1, 'Proposed MST has incorrect edge count'
+    # check that MST has exactly n-1 edges
+    nodes = mst.shape[0]
+    edges = np.count_nonzero(mst) // 2 #only good for undirected graphs...
+    assert edges == nodes - 1, 'Proposed MST has incorrect edge count'
 
     # should always be connected
     degrees = np.sum(mst > 0, axis = 1)
@@ -100,13 +101,12 @@ def test_mst_student2():
     n - 1 edges again...
     
     """
-    g = Graph('../data/small.csv')
+    g = Graph('./data/small.csv')
     g.construct_mst()
 
-    n = g.mst.shape[0]
-    num_edges = np.sum(g.mst > 0)
-
-    assert num_edges == n - 1
+    nodes = g.mst.shape[0]
+    edges = np.count_nonzero(g.mst) // 2
+    assert edges == nodes - 1
 
 def test_mst_student3():
     """
@@ -115,7 +115,7 @@ def test_mst_student3():
     I don't know what else to do...
     
     """
-    coords = np.loadtxt('../data/slingshot_example.txt')
+    coords = np.loadtxt('./data/slingshot_example.txt')
     dist_mat = pairwise_distances(coords)
 
     g = Graph(dist_mat)
